@@ -5,8 +5,8 @@ library(tidyverse)
 library(patchwork)
 library(tigris)
 
-# path to folder with RECON data (too big for git repo)
-path_data_recon <- file.path("C:/Users/s947z036/OneDrive - University of Kansas/Research/MoistureRecycling/RECON/")
+# path to folder with data (too big for git repo)
+path_data <- file.path("C:/Users/s947z036/OneDrive - University of Kansas/Research/MoistureRecycling/")
 
 ## plotting controls
 # ggplot theme
