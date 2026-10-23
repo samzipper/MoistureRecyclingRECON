@@ -1,6 +1,7 @@
 ## ETbyLULC_02_SummarizeGEEoutput.R
 # output from GEE script `ETbyLULC_01_ETbyCropIrrigation` must be copied over to 
 #  the `data/ETbyLULC` folder in the working directory
+# script UTrack-Polygon_02_MonthlyERASummary.R must be run already for comparison.
 
 # set up workspace
 source(file.path("code", "paths+packages.R"))
@@ -8,6 +9,7 @@ source(file.path("code", "paths+packages.R"))
 # load data
 files_yearly <- list.files(file.path("data", "ETbyLULC"))
 sf_cells <- st_read(file.path("data", "ERA5_grid", "ERA5_grid_HPA.shp"))
+sf_cells$area_m2 <- as.numeric(st_area(sf_cells))
 
 for (f in 1:length(files_yearly)){
   #f <- 1
@@ -78,13 +80,65 @@ df_cellETannualMean <-
 write_csv(df_cellETmonthlyMean, file.path("data", "ETbyLULC", "ETbyLULC_02_SummarizeMonthly.csv"))
 write_csv(df_cellETannualMean, file.path("data", "ETbyLULC", "ETbyLULC_02_SummarizeAnnual.csv"))
 
+# load ERA ET
+df_ERA <- read_csv(file.path("data", "UTrack-Polygon_02_MonthlyERASummary.csv"))
+
+df_ERA.OpenET <- left_join(df_cellETmonthlyMean, df_ERA, by = c("cellid", "month"))
+
 # join to cells
 sf_cellETmonthly <-
-  right_join(df_cellETmonthlyMean, sf_cells, by = "cellid") |> 
+  right_join(df_ERA.OpenET, sf_cells, by = "cellid") |> 
   st_as_sf()
 
 sf_cellETannual <- right_join(df_cellETannualMean, sf_cells, by = "cellid") |> 
   st_as_sf()
+
+# ERA comparison
+lm_ERA.OpenET <- lm(ETa_m3_mean ~ evaporation_m3, data = df_ERA.OpenET)
+ggplot(sf_cellETmonthly, aes(x = 1000*evaporation_m3 / area_m2, 
+                            y = 1000*ETa_m3_mean / area_m2, 
+                            color = factor(month))) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  coord_equal() +
+  scale_x_continuous(name = "RECON-corrected Monthly ERA Evaporation [mm]") +
+  scale_y_continuous(name = "OpenET Ensemble Monthly ET [mm]") +
+  scale_color_viridis_d(name = "Month", option = "C") +
+  labs(title = "Comparison of Evaporation Source by Grid Cell",
+       subtitle = paste0("R\u00b2 = ", round(summary(lm_ERA.OpenET)$r.squared, 3)))
+ggsave(file.path("figures+tables", "ETbyLULC_02_CompareOpenET.ERA-Scatter.png"),
+       width = 110, height = 95, units = "mm")
+
+ggplot(sf_cellETmonthly, aes(fill = 1000*((ETa_m3_mean - evaporation_m3) / area_m2))) +
+  facet_wrap(~month, nrow = 2) +
+  geom_sf() +
+  scale_fill_gradient2(name = "Residual [mm]") +
+  labs(title = "Comparison of Evaporation by Grid Cell",
+       subtitle = "Residual = OpenET - ERA") +
+  theme(legend.position = "bottom",
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_blank())
+ggsave(file.path("figures+tables", "ETbyLULC_02_CompareOpenET.ERA-Map.png"),
+       width = 190, height = 130, units = "mm")
+
+ggplot(sf_cellETmonthly, aes(fill = ((ETa_m3_mean - evaporation_m3) / evaporation_m3))) +
+  facet_wrap(~month, nrow = 2) +
+  geom_sf() +
+  scale_fill_gradient2(name = "Residual [%]", labels = scales::percent) +
+  labs(title = "Comparison of Evaporation by Grid Cell",
+       subtitle = "Residual [%] = (OpenET - ERA) / ERA") +
+  theme(legend.position = "bottom",
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_blank())
+ggsave(file.path("figures+tables", "ETbyLULC_02_CompareOpenET.ERA-MapPrc.png"),
+       width = 190, height = 130, units = "mm")
+
+(p_ERA.OpenET_scatter + p_ERA.OpenET_map) +
+  plot_layout(ncol = 2) +
+  plot_annotation(tag_levels = "a", tag_prefix = "(", tag_suffix = ")") &
+  theme(legend.position = "bottom")
 
 # annual plots
 ggplot(sf_cellETannual, aes(fill = ETa_m3_sum)) +
