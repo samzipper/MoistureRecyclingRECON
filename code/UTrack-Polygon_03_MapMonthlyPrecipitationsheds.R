@@ -79,13 +79,16 @@ sf_sink <-
 ggplot() +
   geom_sf(data = sf_sink, aes(fill =  precipAtSinkFromHPA_m3 / precipitation_m3_ERA), color = NA) +
   geom_sf(data = state_boundaries, fill = NA, color = "white") +
-  scale_fill_viridis_b(name = "Precip from HPA cells [%]", 
-                       labels = scales::percent) +
+  scale_fill_viridis_c(name = "Precip from HPA cells [%]", 
+                       labels = scales::percent,
+                       breaks = seq(0, 0.5, 0.25)) +
   facet_wrap(~month, nrow = 2) +
   theme(legend.position = "bottom",
         axis.text = element_blank(),
         axis.ticks = element_blank(),
         panel.border = element_blank())
+ggsave(file.path("figures+tables", "UTrack-Polygon_03_MonthlyPrecipFromHPA-Map.png"),
+       width = 190, height = 100, units = "mm")
 
 
 # plot - precipitation loss as percentage if no irrigation
@@ -100,6 +103,8 @@ ggplot() +
         axis.text = element_blank(),
         axis.ticks = element_blank(),
         panel.border = element_blank())
+ggsave(file.path("figures+tables", "UTrack-Polygon_03_MonthlyPrecipLossPrc-Map.png"),
+       width = 190, height = 100, units = "mm")
 
 # plot - precipitation loss as mm if no irrigation
 ggplot() +
@@ -112,3 +117,5 @@ ggplot() +
         axis.text = element_blank(),
         axis.ticks = element_blank(),
         panel.border = element_blank())
+ggsave(file.path("figures+tables", "UTrack-Polygon_03_MonthlyPrecipLossmm-Map.png"),
+       width = 190, height = 100, units = "mm")
