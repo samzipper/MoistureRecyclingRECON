@@ -63,7 +63,7 @@ df_cellETmonthlyMean <-
   summarize(ETa_m3_mean = mean(ET_m3_total),
             ETalt_m3_mean = mean(ETalt_m3_total),
             ETirr_m3_mean = ETa_m3_mean - ETalt_m3_mean,
-            ETirr_m3_prc = ETirr_m3_mean / ETa_m3_mean)
+            ETirr_prc = ETirr_m3_mean / ETa_m3_mean)
 
 df_cellETannualMean <-
   df_cellETbyYear |> 
@@ -72,12 +72,15 @@ df_cellETannualMean <-
   summarize(ETa_m3_sum = sum(ET_m3_total),
             ETalt_m3_sum = sum(ETalt_m3_total),
             ETirr_m3_sum = ETa_m3_sum - ETalt_m3_sum,
-            ETirr_m3_prc = ETirr_m3_sum / ETa_m3_sum)
+            ETirr_prc = ETirr_m3_sum / ETa_m3_sum)
 
+# save output
+write_csv(df_cellETmonthlyMean, file.path("data", "ETbyLULC", "ETbyLULC_02_SummarizeMonthly.csv"))
+write_csv(df_cellETannualMean, file.path("data", "ETbyLULC", "ETbyLULC_02_SummarizeAnnual.csv"))
 
 # join to cells
 sf_cellETmonthly <-
-  right_join(df_cellETmean, sf_cells, by = "cellid") |> 
+  right_join(df_cellETmonthlyMean, sf_cells, by = "cellid") |> 
   st_as_sf()
 
 sf_cellETannual <- right_join(df_cellETannualMean, sf_cells, by = "cellid") |> 
@@ -89,7 +92,7 @@ ggplot(sf_cellETannual, aes(fill = ETa_m3_sum)) +
   scale_fill_viridis_c(name = "ET [m^3]", direction = -1) +
   theme(legend.position = "bottom")
 
-ggplot(sf_cellETannual, aes(fill = ETirr_m3_prc)) +
+ggplot(sf_cellETannual, aes(fill = ETirr_prc)) +
   geom_sf() +
   scale_fill_viridis_c(name = "ET from Irrigation [%]", direction = -1, labels = scales::percent) +
   theme(legend.position = "bottom") +
@@ -97,7 +100,7 @@ ggplot(sf_cellETannual, aes(fill = ETirr_m3_prc)) +
 ggsave(file.path("figures+tables", "ETbyLULC_02_AnnualETfromIrr-Map.png"),
        width = 4, height = 6, units = "in")
 
-ggplot(sf_cellETannual, aes(x = ETirr_m3_prc)) +
+ggplot(sf_cellETannual, aes(x = ETirr_prc)) +
   geom_histogram(breaks = seq(-0.1, 0.3, 0.01)) +
   scale_x_continuous(labels = scales::percent) +
   labs(title = "Annual Average",
@@ -115,7 +118,7 @@ ggplot(sf_cellETmonthly, aes(fill = ETa_m3_mean)) +
   facet_wrap(~month) +
   scale_fill_viridis_c(name = "ET [m^3]", direction = -1)
 
-ggplot(sf_cellETmonthly, aes(fill = ETirr_m3_prc)) +
+ggplot(sf_cellETmonthly, aes(fill = ETirr_prc)) +
   geom_sf() +
   facet_wrap(~month) +
   scale_fill_gradient2(name = "ET from Irrigation [%]", labels = scales::percent)
@@ -123,7 +126,7 @@ ggplot(sf_cellETmonthly, aes(fill = ETirr_m3_prc)) +
 
 sf_cellETmonthly |> 
   subset(month %in% seq(6,9)) |> 
-  ggplot(aes(fill = ETirr_m3_prc)) +
+  ggplot(aes(fill = ETirr_prc)) +
   geom_sf() +
   facet_wrap(~month) +
   scale_fill_viridis_c(name = "ET from Irrigation [%]", 
@@ -139,7 +142,7 @@ ggsave(file.path("figures+tables", "ETbyLULC_02_MonthlyETfromIrr-GrowingSeason-M
 
 sf_cellETmonthly |> 
   subset(month %in% seq(6,9)) |> 
-  ggplot(aes(x = ETirr_m3_prc)) +
+  ggplot(aes(x = ETirr_prc)) +
   geom_histogram(breaks = seq(-0.1, 0.3, 0.01)) +
   scale_x_continuous(labels = scales::percent) +
   labs(title = "Monthly Average, Peak Irrigation Season",

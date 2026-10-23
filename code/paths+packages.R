@@ -1,11 +1,12 @@
 # packages
-# install.packages(c("terra", "sf", "tidyverse", "patchwork", "tigris", "circlize"))
+# install.packages(c("terra", "sf", "tidyverse", "patchwork", "tigris", "circlize", "tidync"))
 library(terra)
 library(sf)
 library(tidyverse)
 library(patchwork)
 library(tigris)
 library(circlize)
+library(tidync)
 
 # path to folder with data (too big for git repo)
 path_data <- file.path("C:/Users/s947z036/OneDrive - University of Kansas/Research/MoistureRecycling/")
