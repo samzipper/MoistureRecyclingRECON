@@ -41,4 +41,4 @@ exec wget \
     --retry-connrefused \
     --directory-prefix="$destination" \
     --append-output="$destination/download.log" \
-    'https://glass.hku.hk/archive/ET/MODIS/1KM/'
+    'https://glass.hku.hk/archive/ET/MODIS/1KM/2008/033'
