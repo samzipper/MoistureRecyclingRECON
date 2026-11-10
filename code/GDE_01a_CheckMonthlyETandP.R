@@ -3,7 +3,7 @@
 # No yearly stacks are required. Means cannot be independently recomputed without them.
 # Numerical checks use native grids; only plot rasters are aggregated.
 #
-# Author: Sam + Copilot
+# Author: Sam Zipper + Copilot
 # Date: 11/9/2026
 
 # set up workspace

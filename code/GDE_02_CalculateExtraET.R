@@ -8,6 +8,9 @@
 # BEFORE RUNNING THIS SCRIPT:
 #  Manually copy the files from "G:/My Drive/GEEexports/GlobalGDEs"
 #   to "C:/Users/s947z036/OneDrive - University of Kansas/Research/MoistureRecycling/RohdeEtAl_GDEs/SZ_Analysis"
+#
+# Author: Sam Zipper
+# Date: 11/9/2026
 
 # set up workspace
 source(file.path("code", "paths+packages.R"))

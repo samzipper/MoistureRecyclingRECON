@@ -9,6 +9,19 @@ library(sf)
 library(terra)
 library(httr)
 
+# ## If needed: Identify CONUS tiles
+# sf_tiles <- st_read("data/GDE_Tiles_RohdeEtAl.shp")
+# ERA_CONUS <- st_read("data/ERA5_grid/ERA5_grid_CONUS.shp") |> st_union()
+# 
+# # identify tiles that intersect ERA_CONUS
+# sf_int <- st_intersects(sf_tiles, ERA_CONUS, sparse = FALSE)
+# tiles_CONUS <- sf_tiles$name[sf_int]
+# 
+# tiles_CONUS
+# 
+# paste(tiles_CONUS, collapse = "','")
+
+
 # Set up paths
 gde_tiles_dir <- "C:\\Users\\s947z036\\OneDrive - University of Kansas\\Research\\MoistureRecycling\\RohdeEtAl_GDEs\\D_Data_GDEtiles_5deg"
 sqlite_file <- file.path(gde_tiles_dir, "tile_extents.sqlite")

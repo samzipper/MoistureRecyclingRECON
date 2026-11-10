@@ -7,6 +7,8 @@ library(patchwork)
 library(tigris)
 library(circlize)
 library(tidync)
+library(future)
+library(future.apply)
 
 # path to folder with data (too big for git repo)
 path_data <- file.path("C:/Users/s947z036/OneDrive - University of Kansas/Research/MoistureRecycling/")
