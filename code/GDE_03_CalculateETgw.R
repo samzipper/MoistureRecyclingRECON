@@ -4,7 +4,7 @@
 # each grid cell.
 #
 # Author: Sam Zipper
-# Date: 11/9/2026
+# Date: 11/10/2026
 
 # set up workspace
 source(file.path("code", "paths+packages.R"))
@@ -12,10 +12,10 @@ source(file.path("code", "paths+packages.R"))
 # paths
 path_extraET <- file.path(path_data, "RohdeEtAl_GDEs", "SZ_Analysis", "GDE_02_CalculateExtraET")
 path_GDEtiles <- file.path(path_data, "RohdeEtAl_GDEs", "D_Data_GDEtiles_5deg")
-path_output <- file.path(path_data, "RohdeEtAl_GDEs", "SZ_Analysis", "GDE_03_CalculateETgw")
+path_ETgw <- file.path(path_data, "RohdeEtAl_GDEs", "SZ_Analysis", "GDE_03_CalculateETgw")
 
 ## function here with following inputs
-ETfromGW <- function(tile, path_GDEtiles, path_extraET, path_output){
+ETfromGW <- function(tile, path_GDEtiles, path_extraET, path_ETgw){
 
   
   # load datasets
@@ -45,7 +45,7 @@ ETfromGW <- function(tile, path_GDEtiles, path_extraET, path_output){
   
   
   terra::writeRaster(r_ETfromGW_mo, 
-                     file.path(path_output, paste0("GDE_03_ETgw_prc_", tile, ".tif")), 
+                     file.path(path_ETgw, paste0("GDE_03_ETgw_prc_", tile, ".tif")), 
                      datatype = "INT4S", 
                      scale = 0.001, 
                      offset = 0,
@@ -66,6 +66,6 @@ future.apply::future_lapply(
   ETfromGW,
   path_GDEtiles = path_GDEtiles,
   path_extraET = path_extraET,
-  path_output = path_output,
+  path_ETgw = path_ETgw,
   future.seed = NULL
 )
