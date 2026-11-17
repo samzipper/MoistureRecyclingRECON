@@ -14,8 +14,8 @@ output_directory <- file.path(
 )
 flow_encoding <- "encoded-log"
 source_lon_chunk_size <- 4L
-months_run <- 7L
-min_frac <- 1e-5
+months_run <- seq(1, 12)
+min_frac <- 1e-4
 
 normalize_longitude <- function(longitude) {
   (longitude + 180) %% 360 - 180
@@ -211,8 +211,8 @@ run_month <- function(month, source_cells, sink_cells, min_frac) {
 
 if (sys.nframe() == 0) {
   grid_cells <- read_grid_centres(polygon_grid_file)
-  ## TESTING: RUN WESTERN HEMISPHERE ONLY
-  sink_cells <- grid_cells |> filter(normalize_longitude(longitude) < -60 & normalize_longitude(longitude) > -130)
+  
+  sink_cells <- grid_cells ## TESTING: RUN WESTERN HEMISPHERE ONLY |> filter(normalize_longitude(longitude) < -60 & normalize_longitude(longitude) > -130)
   for (month in months_run) {
     source_cells <- read_source_cells(etgw_file, grid_cells, month)
     message(

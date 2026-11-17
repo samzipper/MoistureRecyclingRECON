@@ -107,19 +107,20 @@ for (m in seq(1,12)){
 
 
 # add spatial information
-mo_test <- 7
+mo_test <- seq(5, 8)
 sf_sink <- 
   df_sink |> 
-  subset(month == mo_test) |> 
+  subset(month %in% mo_test) |> 
   right_join(sf_grid, by = c("cellid_sink" = "cellid")) |> 
   st_as_sf()
 
-# plot - percent of precipitation at cell from HPA region
+# plot - percent of precipitation at cell from dryland GDE ETgw region
 ggplot() +
   geom_sf(data = sf_sink, aes(fill =  precipAtSinkFromETgw_m3 / precipitation_m3_ERA), color = NA) +
   #geom_sf(data = state_boundaries, fill = NA, color = "white") +
   scale_fill_viridis_c(name = "Precip from ETgw [%]", 
                        labels = scales::percent) +
+  coord_sf(xlim = c(-130, -60), ylim = c(20, 60)) +  # north america
   facet_wrap(~month, nrow = 2) +
   theme(legend.position = "bottom",
         axis.text = element_blank(),
