@@ -25,6 +25,15 @@ manifest_files <- list.files(input_directory,
                              full.names = FALSE)
 if (length(manifest_files) == 0) stop("No tile-based climate manifests found.")
 
+# figure out what tiles have not been processed
+all_tiles <- 
+  file.path(path_data, "RohdeEtAl_GDEs", "D_Data_GDEtiles_5deg") |> 
+  list.files(pattern = "*.tif") |> 
+  str_replace(".tif", "")
+manifest_tiles <- str_sub(str_split_i(manifest_files, pattern = "_", 7), end = -5)
+tiles_toDo <- all_tiles[!(all_tiles %in% manifest_tiles)]
+# turn into GEE input:  paste0("['", paste0(tiles_toDo, collapse = "'],'["), "]")
+
 for (m in manifest_files){
   # m <- manifest_files[1]
   
