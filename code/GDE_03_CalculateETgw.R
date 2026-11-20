@@ -58,11 +58,15 @@ ETfromGW <- function(tile, path_GDEtiles, path_extraET, path_ETgw){
 tiles_all <- list.files(path_extraET, pattern = "GDE_02_MonthlyET-P_0capPrc_*")
 tiles <- str_sub(sapply(str_split(tiles_all, pattern = "_"), `[`, 5), end = -5)
 
+# which tiles to run? have GEO_02 output, but GDE_03 output does not yet exist
+tiles_alreadyDone <- tiles[file.exists(file.path(path_ETgw, paste0("GDE_03_ETgw_prc_", tiles, ".tif")))]
+tiles_toProcess <- tiles[!(tiles %in% tiles_alreadyDone)]
+
 # run in parallel
 future::plan(future::multisession, workers = 8)
 
 future.apply::future_lapply(
-  tiles,
+  tiles_toProcess,
   ETfromGW,
   path_GDEtiles = path_GDEtiles,
   path_extraET = path_extraET,

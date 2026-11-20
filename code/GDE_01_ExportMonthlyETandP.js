@@ -8,6 +8,7 @@
 
 // 1. Set analysis period, tile batch, and export options
 // Set tileNames to null for all tiles; otherwise batch only the named subset.
+// excludedTileNames are removed from the selected tiles before batching.
 // Batches use sorted names and a zero-based start; null batchSize selects all remaining.
 // Drive exports accept folder names, not nested paths.
 var config = {
@@ -15,9 +16,10 @@ var config = {
   endYear: 2017,
   driveFolder: 'GlobalGDEs',
   tileAsset: 'projects/ee-samzipper/assets/GDE_Tiles_RohdeEtAl',
-  tileNames: ['n35w110'],
+  tileNames: ['n10e050'], // name tiles here, or [] (or maybe null?) to run all
+  excludedTileNames: [], // set to [] to run all tiles
   batchStart: 0,
-  batchSize: 20,
+  batchSize: 65,
   exportYearlyStacks: false,
   exportClimatologies: true,
   exportTranspiration: false,
@@ -29,6 +31,9 @@ var config = {
 var selectedTiles = ee.FeatureCollection(config.tileAsset).select(['name']);
 if (config.tileNames !== null) {
   selectedTiles = selectedTiles.filter(ee.Filter.inList('name', config.tileNames));
+}
+if (config.excludedTileNames.length > 0) {
+  selectedTiles = selectedTiles.filter(ee.Filter.inList('name', config.excludedTileNames).not());
 }
 selectedTiles = selectedTiles.sort('name');
 var etBands = config.exportTranspiration ? ['ET', 'T'] : ['ET'];
@@ -449,6 +454,7 @@ function createTileExports(outputs, tile) {
 print('PML collection is deprecated; no newer version is substituted.');
 print('ET is land ET (Ec + Es + Ei), not Rohde et al.\'s unweighted Ec predictor.');
 print('Tile selection: ' + (config.tileNames === null ? 'all asset tiles' : config.tileNames.join(', ')));
+print('Excluded tile names: ' + config.excludedTileNames.join(', '));
 print('Drive export folder: ' + config.driveFolder);
 if (config.showDiagnostics) {
   print('Monthly image count', monthly.size());

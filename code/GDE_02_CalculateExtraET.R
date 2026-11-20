@@ -32,13 +32,20 @@ all_tiles <-
   str_replace(".tif", "")
 manifest_tiles <- str_sub(str_split_i(manifest_files, pattern = "_", 7), end = -5)
 tiles_toDo <- all_tiles[!(all_tiles %in% manifest_tiles)]
-# turn into GEE input:  paste0("['", paste0(tiles_toDo, collapse = "'],'["), "]")
+# turn into GEE input:  paste0("['", paste0(tiles_toDo[59:118], collapse = "','"), "']")
 
-for (m in manifest_files){
+# figure out if there are missing ET or P files
+ET_missing <- all_tiles[!file.exists(file.path(input_directory, paste0("GDE_ET_monthly_climatology_2008_2017_", all_tiles, ".tif")))]
+P_missing <- all_tiles[!file.exists(file.path(input_directory, paste0("GDE_P_monthly_climatology_2008_2017_", all_tiles, ".tif")))]
+tiles_toDo <- unique(c(ET_missing, P_missing))
+# turn into GEE input:  paste0("['", paste0(tiles_toDo, collapse = "','"), "']")
+
+# which tiles to run? have manifest, but not in tiles_toDo and output does not yet exist
+tiles_alreadyDone <- all_tiles[file.exists(file.path(data_directory, "GDE_02_CalculateExtraET", paste0("GDE_02_AnnualET-P_", all_tiles, ".tif")))]
+tiles_toProcess <- all_tiles[!(all_tiles %in% unique(c(tiles_toDo, tiles_alreadyDone)))]
+
+for (tile in tiles_toProcess){
   # m <- manifest_files[1]
-  
-  # extract name of tile
-  tile <- str_sub(str_split(m, pattern = "_")[[1]][7], end = -5)
   
   # load ET and P
   r_ET <- rast(file.path(input_directory, paste0("GDE_ET_monthly_climatology_2008_2017_", tile, ".tif")))
@@ -97,5 +104,7 @@ for (m in manifest_files){
                      scale = 0.001, 
                      offset = 0,
                      overwrite = TRUE)
+  
+  print(paste0("tile ", which(tiles_toProcess == tile), " of ", length(tiles_toProcess), " done"))
   
 }

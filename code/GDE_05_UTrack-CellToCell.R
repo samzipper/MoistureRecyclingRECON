@@ -6,7 +6,7 @@ source(file.path("code", "paths+packages.R"))
 polygon_grid_file <- file.path("data", "ERA5_grid", "ERA5_grid_Global-Land-NoPoles.shp")
 etgw_file <- file.path(
   path_data, "RohdeEtAl_GDEs", "SZ_Analysis", "GDE_04_ETgwByERA",
-  "GDE_04_ETgwByERA_AllCells.csv"
+  "GDE_04_ETgwByERA-AllCells.csv"
 )
 utrack_directory <- file.path(path_data, "UTrack")
 output_directory <- file.path(
