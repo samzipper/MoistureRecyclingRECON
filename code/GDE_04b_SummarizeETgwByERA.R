@@ -37,14 +37,33 @@ df_cells <-
 # save
 write_csv(df_cells, file.path(path_ETgwByERA, "GDE_04_ETgwByERA-AllCells.csv"))
 
+# pivot longer
+df_cells_long <-
+  df_cells |> 
+  pivot_longer(
+    cols = -c(cellid, area_m2),
+    names_to = c(".value", "month"),
+    names_pattern = "(ETgw_m3|ET_m3)_(\\d{2})"
+  ) %>%
+  arrange(cellid, month) |> 
+  mutate(ETgw_prc = ETgw_m3 / ET_m3)
+
 # take a look
-v_era_native <- terra::vect(file.path("data", "ERA5_grid", "ERA5_grid_Global-Land-NoPoles.shp"))
-df_cells$ETgw_prc_test <- df_cells$ETgw_m3_07 / df_cells$ET_m3_07
+sf_era_native <- st_read(file.path("data", "ERA5_grid", "ERA5_grid_Global-Land-NoPoles.shp"))
 
-v_era_tile_withETgw <- merge(v_era_native, dplyr::select(df_cells, cellid, ETgw_prc_test), by.x = "cellid", by.y = "cellid")
+sf_era_tile_withETgw <- 
+  right_join(df_cells_long, sf_era_native, by = "cellid") |> 
+  st_as_sf() |> 
+  subset(is.finite(ETgw_prc))
 
-sf_era_tile_withETgw <- st_as_sf(v_era_tile_withETgw)
-ggplot(sf_era_tile_withETgw, aes(fill = ETgw_prc_test)) +
-  geom_sf(color = NA)
-
+ggplot(sf_era_tile_withETgw, aes(fill = ETgw_prc)) +
+  geom_sf(data = sf_era_native, color = NA, fill = "grey85") +
+  geom_sf(color = NA) +
+  scale_fill_viridis_c(name = "ETgw [%]", direction = -1) +
+  facet_wrap(~month) +
+  labs(title = "Dryland GDE ETgw as % of monthly ET (grey = not analyzed)") +
+  theme(axis.text = element_blank(),
+        legend.position = "bottom")
+ggsave(file.path("figures+tables", "GDE_04b_MapETgwByPixel.png"),
+       width = 260, height = 120, units = "mm")
 
