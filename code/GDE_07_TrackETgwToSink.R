@@ -6,11 +6,12 @@ source(file.path("code", "paths+packages.R"))
 polygon_grid_file <- file.path("data", "ERA5_grid", "ERA5_grid_Global-Land-NoPoles.shp")
 etgw_file <- file.path(
   path_data, "RohdeEtAl_GDEs", "SZ_Analysis", "GDE_04_ETgwByERA",
-  "GDE_04_ETgwByERA_AllCells.csv"
+  "GDE_04_ETgwByERA-AllCells.csv"
 )
 cell2cell_directory <- file.path(
   path_data, "RohdeEtAl_GDEs", "SZ_Analysis", "GDE_05_UTrack-CellToCell"
 )
+path_trackETgw <- file.path(path_data, "RohdeEtAl_GDEs", "SZ_Analysis", "GDE_07_TrackETgw")
 
 # load data used in all months
 sf_grid <- st_read(polygon_grid_file)
@@ -36,30 +37,20 @@ for (m in seq(1,12)){
   sources_month <- unique(subset(df_etgw, ETgw_mo_prc >= min_frac)$cellid)
   
   # # map to inspect
-  # left_join(sf_grid, dplyr::select(df_etgw, cellid, ETgw_mo_prc), by = "cellid") |> 
+  # left_join(sf_grid, dplyr::select(df_etgw, cellid, ETgw_mo_prc), by = "cellid") |>
   #   ggplot(aes(fill = ETgw_mo_prc)) +
   #   geom_sf(color = NA) +
-  #   scale_fill_viridis_c(direction = -1, labels = scales::percent) +
-  #   coord_sf(xlim = c(-130, -80),
-  #            ylim = c(20, 50),
-  #            expand = FALSE)
+  #   scale_fill_viridis_c(direction = -1, labels = scales::percent)
   # 
-  # left_join(sf_grid, dplyr::select(df_etgw, cellid, ETgw_m3_07), by = "cellid") |> 
+  # left_join(sf_grid, dplyr::select(df_etgw, cellid, ETgw_m3_07), by = "cellid") |>
   #   ggplot(aes(fill = ETgw_m3_07)) +
   #   geom_sf(color = NA) +
-  #   scale_fill_viridis_c(direction = -1) +
-  #   coord_sf(xlim = c(-130, -80),
-  #            ylim = c(20, 50),
-  #            expand = FALSE)
+  #   scale_fill_viridis_c(direction = -1)
   # 
-  # left_join(sf_grid, dplyr::select(df_etgw, cellid, ET_m3_07), by = "cellid") |> 
+  # left_join(sf_grid, dplyr::select(df_etgw, cellid, ET_m3_07), by = "cellid") |>
   #   ggplot(aes(fill = ET_m3_07)) +
   #   geom_sf(color = NA) +
-  #   scale_fill_viridis_c(direction = -1) +
-  #   coord_sf(xlim = c(-130, -80),
-  #            ylim = c(20, 50),
-  #            expand = FALSE)
-  
+  #   scale_fill_viridis_c(direction = -1)
   
   # load source-to-sink and join
   df_cell2cell_mo <- 
@@ -98,42 +89,7 @@ for (m in seq(1,12)){
     # NA means no source-sink relationship, so set to 0
     replace_na(list(precipAtSinkFromETgw_m3 = 0))
   
-  if (m == 1){
-    df_sink <- df_mo_sink
-  } else {
-    df_sink <- bind_rows(df_sink, df_mo_sink)
-  }
+  write.csv(df_mo_sink, file.path(path_trackETgw, paste0("GDE_07_TrackETgwToSink_", mo, ".csv")))
+  
+  print(paste0(mo, " complete, ", Sys.time()))
 }
-
-
-# add spatial information
-mo_test <- seq(5, 8)
-sf_sink <- 
-  df_sink |> 
-  subset(month %in% mo_test) |> 
-  right_join(sf_grid, by = c("cellid_sink" = "cellid")) |> 
-  st_as_sf()
-
-# plot - percent of precipitation at cell from dryland GDE ETgw region
-ggplot() +
-  geom_sf(data = sf_sink, aes(fill =  precipAtSinkFromETgw_m3 / precipitation_m3_ERA), color = NA) +
-  #geom_sf(data = state_boundaries, fill = NA, color = "white") +
-  scale_fill_viridis_c(name = "Precip from ETgw [%]", 
-                       labels = scales::percent) +
-  coord_sf(xlim = c(-130, -60), ylim = c(20, 60)) +  # north america
-  facet_wrap(~month, nrow = 2) +
-  theme(legend.position = "bottom",
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.border = element_blank())
-
-ggplot() +
-  geom_sf(data = sf_sink, aes(fill =  precipitation_m3_ERA), color = NA) +
-  #geom_sf(data = state_boundaries, fill = NA, color = "white") +
-  scale_fill_viridis_c(name = "Precip from ERA [m^3]",
-                       trans = "log10") +
-  facet_wrap(~month, nrow = 2) +
-  theme(legend.position = "bottom",
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.border = element_blank())
